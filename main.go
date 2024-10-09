@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/U-T-kuroitigo/eaticle/routes"
+	"github.com/U-T-kuroitigo/eaticle_go_server/routes"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 )
