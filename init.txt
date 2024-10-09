@@ -1,0 +1,18 @@
+以下コンソールで実行
+go mod init github.com/U-T-kuroitigo/eaticle
+go get -u github.com/labstack/echo/...
+go get -u gorm.io/gorm
+go get -u gorm.io/driver/mysql
+go get github.com/U-T-kuroitigo/eaticle
+go get github.com/joho/godotenv
+go get "github.com/go-playground/validator/v10"
+go mod tidy
+
+
+.envファイルを作成
+ファイル内に以下を記載
+Server = "host名"
+Port = "使用ポート"
+User = "使用ユーザー"
+Password = "パスワード"
+Database = "使用データベース"
