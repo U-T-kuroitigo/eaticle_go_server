@@ -1,17 +1,18 @@
-package user
+package functions
 
 import (
 	"net/http"
 
-	"github.com/U-T-kuroitigo/eaticle/configuration"
-	"github.com/U-T-kuroitigo/eaticle/response"
+	"github.com/U-T-kuroitigo/eaticle_go_server/configuration"
+	"github.com/U-T-kuroitigo/eaticle_go_server/models"
+	"github.com/U-T-kuroitigo/eaticle_go_server/response"
 	"github.com/labstack/echo"
 	"gorm.io/gorm"
 )
 
-func Create(c echo.Context) error {
-	ch := &User{}
-	if err := c.Bind(ch); err != nil {
+func CreateUser(c echo.Context) error {
+	user := new(models.User)
+	if err := c.Bind(user); err != nil {
 		r := response.Model{
 			Code:    "400",
 			Message: "Incorrect structure",
@@ -20,7 +21,7 @@ func Create(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, r)
 	}
 
-	if err := ValidateUser(ch); err != nil {
+	if err := models.ValidateUser(user); err != nil {
 		return c.JSON(http.StatusBadRequest, response.Model{
 			Code:    "400",
 			Message: "Failed validation",
@@ -28,12 +29,11 @@ func Create(c echo.Context) error {
 		})
 	}
 
-	db := configuration.GetConnection()
-
-	if err := db.Create(&ch).Error; err != nil {
+	db := configuration.GetDB()
+	if err := db.Create(&user).Error; err != nil {
 		r := response.Model{
 			Code:    "500",
-			Message: "Error creatingr",
+			Message: "Error creating user",
 			Data:    err.Error(),
 		}
 		return c.JSON(http.StatusInternalServerError, r)
@@ -42,15 +42,14 @@ func Create(c echo.Context) error {
 	r := response.Model{
 		Code:    "201",
 		Message: "Created Successfully",
-		Data:    ch,
+		Data:    user,
 	}
 	return c.JSON(http.StatusCreated, r)
 }
 
-func GetAll(c echo.Context) error {
-	users := []User{}
-	db := configuration.GetConnection()
-
+func GetAllUsers(c echo.Context) error {
+	users := []models.User{}
+	db := configuration.GetDB()
 	if err := db.Find(&users).Error; err != nil {
 		r := response.Model{
 			Code:    "500",
@@ -68,17 +67,16 @@ func GetAll(c echo.Context) error {
 	return c.JSON(http.StatusOK, r)
 }
 
-func Delete(c echo.Context) error {
-	var user User
+func DeleteUser(c echo.Context) error {
+	var user models.User
 	ui := c.QueryParam("user_id")
-
-	db := configuration.GetConnection()
+	db := configuration.GetDB()
 
 	if err := db.Where("user_id = ?", ui).First(&user).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return c.JSON(http.StatusInternalServerError, response.Model{
+			return c.JSON(http.StatusNotFound, response.Model{
 				Code:    "404",
-				Message: "not found",
+				Message: "User not found",
 				Data:    err.Error(),
 			})
 		} else {
@@ -90,7 +88,7 @@ func Delete(c echo.Context) error {
 		}
 	}
 
-	if err := db.Where("user_id = ?", ui).Delete(&user).Error; err != nil {
+	if err := db.Delete(&user).Error; err != nil {
 		r := response.Model{
 			Code:    "500",
 			Message: "Delete error",
@@ -107,18 +105,16 @@ func Delete(c echo.Context) error {
 	return c.JSON(http.StatusAccepted, r)
 }
 
-func Update(c echo.Context) error {
+func UpdateUser(c echo.Context) error {
 	ui := c.QueryParam("user_id")
+	db := configuration.GetDB()
 
-	db := configuration.GetConnection()
-
-	user := User{}
-
+	user := models.User{}
 	if err := db.Where("user_id = ?", ui).First(&user).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return c.JSON(http.StatusInternalServerError, response.Model{
+			return c.JSON(http.StatusNotFound, response.Model{
 				Code:    "404",
-				Message: "not found",
+				Message: "User not found",
 				Data:    err.Error(),
 			})
 		} else {
@@ -130,7 +126,6 @@ func Update(c echo.Context) error {
 		}
 	}
 
-	// リクエストボディをマップに変換
 	var requestBody map[string]interface{}
 	if err := c.Bind(&requestBody); err != nil {
 		return c.JSON(http.StatusBadRequest, response.Model{
@@ -140,13 +135,12 @@ func Update(c echo.Context) error {
 		})
 	}
 
-	// 更新対象のフィールドを明示的に指定
 	updates := make(map[string]interface{})
 	for key, value := range requestBody {
 		updates[key] = value
 	}
 
-	if err := db.Model(&User{}).Where("user_id = ?", ui).Updates(updates).Error; err != nil {
+	if err := db.Model(&models.User{}).Where("user_id = ?", ui).Updates(updates).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, response.Model{
 			Code:    "500",
 			Message: "Error updating",
@@ -170,16 +164,16 @@ func Update(c echo.Context) error {
 	return c.JSON(http.StatusAccepted, r)
 }
 
-func Get(c echo.Context) error {
+func GetUser(c echo.Context) error {
 	ui := c.QueryParam("user_id")
-	db := configuration.GetConnection()
+	db := configuration.GetDB()
 
-	var user User
+	var user models.User
 	if err := db.Where("user_id = ?", ui).First(&user).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return c.JSON(http.StatusInternalServerError, response.Model{
+			return c.JSON(http.StatusNotFound, response.Model{
 				Code:    "404",
-				Message: "not found",
+				Message: "User not found",
 				Data:    err.Error(),
 			})
 		} else {

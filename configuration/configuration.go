@@ -1,18 +1,18 @@
 package configuration
 
 import (
-	"fmt"
 	"log"
 	"os"
-	"time"
 
+	"fmt"
+
+	"github.com/U-T-kuroitigo/eaticle_go_server/models"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/mysql"
-
 	"gorm.io/gorm"
 )
 
-// Configuration creates a struct for the json
+// Configuration creates a struct for the environment variables
 type Configuration struct {
 	Server   string
 	Port     string
@@ -21,7 +21,7 @@ type Configuration struct {
 	Database string
 }
 
-// GetConfiguration gets the configuration from the json
+// GetConfiguration gets the configuration from the environment variables
 func GetConfiguration() Configuration {
 	var c Configuration
 	err := godotenv.Load(".env")
@@ -39,25 +39,17 @@ func GetConfiguration() Configuration {
 	return c
 }
 
-// GetConnection obtains a connection to the database
-func GetConnection() *gorm.DB {
+// InitDB initializes the database connection and performs auto-migration
+func InitDB() *gorm.DB {
 	c := GetConfiguration()
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local", c.User, c.Password, c.Server, c.Port, c.Database)
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Failed to connect to database: ", err)
 	}
 
-	db.AutoMigrate(&user{})
+	// AutoMigrate the models
+	db.AutoMigrate(&models.User{})
 
 	return db
-}
-
-type user struct {
-	UserID      string `json:"user_id" gorm:"type:varchar(255);primaryKey;not null" validate:"max=32"`
-	MailAddress string `json:"mail_address" gorm:"index:,unique,type:varchar(255);not null"`
-	GmailID     string `json:"gmail_id" gorm:"unique,type:varchar(255);not null;size:255"`
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
-	DeletedAt   gorm.DeletedAt `gorm:"index"`
 }
