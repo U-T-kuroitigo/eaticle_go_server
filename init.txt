@@ -8,6 +8,8 @@ go get github.com/joho/godotenv
 go get "github.com/go-playground/validator/v10"
 go mod tidy
 
+開発環境用
+replace github.com/U-T-kuroitigo/eaticle_go_server => //ローカルフォルダの絶対パス
 
 .envファイルを作成
 ファイル内に以下を記載
