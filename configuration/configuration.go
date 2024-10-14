@@ -7,7 +7,6 @@ import (
 	"fmt"
 
 	"github.com/U-T-kuroitigo/eaticle_go_server/models"
-	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -24,10 +23,6 @@ type Configuration struct {
 // GetConfiguration gets the configuration from the environment variables
 func GetConfiguration() Configuration {
 	var c Configuration
-	err := godotenv.Load(".env")
-	if err != nil {
-		log.Fatalf("Error loading .env file")
-	}
 
 	// 環境変数を取得
 	c.Server = os.Getenv("Server")
