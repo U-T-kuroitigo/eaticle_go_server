@@ -1,6 +1,7 @@
 package models
 
 import (
+	"log"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -8,9 +9,9 @@ import (
 )
 
 type User struct {
-	UserID      string `json:"user_id" gorm:"type:varchar(255);primaryKey;not null" validate:"max=32"`
-	MailAddress string `json:"mail_address" gorm:"index:,unique,type:varchar(255);not null"`
-	GmailID     string `json:"gmail_id" gorm:"unique,type:varchar(255);not null;size:255"`
+	UserID      string `json:"user_id" gorm:"type:uuid;primaryKey;not null" validate:"uuid"`
+	MailAddress string `json:"mail_address" gorm:"index:,unique;type:varchar(255);not null" validate:"required,email"`
+	GmailID     string `json:"gmail_id" gorm:"unique;type:varchar(255);not null;size:255" validate:"required"`
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 	DeletedAt   gorm.DeletedAt `gorm:"index"`
@@ -23,5 +24,13 @@ func init() {
 }
 
 func ValidateUser(user *User) error {
-	return validate.Struct(user)
+	err := validate.Struct(user)
+	if err != nil {
+		// バリデーションエラーが発生したフィールドをログに記録
+		for _, err := range err.(validator.ValidationErrors) {
+			log.Printf("Validation failed for field '%s' with tag '%s'", err.Field(), err.Tag())
+		}
+		return err
+	}
+	return nil
 }
