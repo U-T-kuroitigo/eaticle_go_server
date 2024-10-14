@@ -8,7 +8,7 @@ import (
 
 	"github.com/U-T-kuroitigo/eaticle_go_server/models"
 	"github.com/joho/godotenv"
-	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -42,8 +42,8 @@ func GetConfiguration() Configuration {
 // InitDB initializes the database connection and performs auto-migration
 func InitDB() *gorm.DB {
 	c := GetConfiguration()
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local", c.User, c.Password, c.Server, c.Port, c.Database)
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", c.Server, c.Port, c.User, c.Password, c.Database)
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatal("Failed to connect to database: ", err)
 	}
