@@ -16,6 +16,7 @@ type User struct {
 	UserImg      string `json:"user_img" gorm:"type:varchar(255)" validate:"omitempty,url"`
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
+	Articles     []Article `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE;" json:"articles"`
 }
 
 var validate *validator.Validate
