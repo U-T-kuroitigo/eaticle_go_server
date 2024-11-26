@@ -5,190 +5,102 @@ import (
 
 	"github.com/U-T-kuroitigo/eaticle_go_server/configuration"
 	"github.com/U-T-kuroitigo/eaticle_go_server/models"
-	"github.com/U-T-kuroitigo/eaticle_go_server/response"
 	"github.com/labstack/echo"
-	"gorm.io/gorm"
 )
 
+// userテーブルへの追加処理
 func CreateUser(c echo.Context) error {
 	user := new(models.User)
 	if err := c.Bind(user); err != nil {
-		r := response.Model{
-			Code:    "400",
-			Message: "Incorrect structure",
-			Data:    err.Error(),
-		}
-		return c.JSON(http.StatusBadRequest, r)
+		return HandleInvalidRequestBody(c, err)
 	}
 
 	if err := models.ValidateUser(user); err != nil {
-		return c.JSON(http.StatusBadRequest, response.Model{
-			Code:    "400",
-			Message: "Failed validation",
-			Data:    err.Error(),
-		})
+		return HandleInvalidRequestBody(c, err) // バリデーションエラーも400で処理
 	}
 
 	db := configuration.GetDB()
 	if err := db.Create(&user).Error; err != nil {
-		r := response.Model{
-			Code:    "500",
-			Message: "Error creating user",
-			Data:    err.Error(),
-		}
-		return c.JSON(http.StatusInternalServerError, r)
+		return HandleDBError(c, err)
 	}
 
-	r := response.Model{
-		Code:    "201",
-		Message: "Created Successfully",
-		Data:    user,
-	}
-	return c.JSON(http.StatusCreated, r)
+	return HandleSuccess(c, "Created successfully", user, http.StatusCreated)
 }
 
+// userテーブルの全件取得処理
 func GetAllUsers(c echo.Context) error {
 	users := []models.User{}
 	db := configuration.GetDB()
 	if err := db.Find(&users).Error; err != nil {
-		r := response.Model{
-			Code:    "500",
-			Message: "Query error",
-			Data:    err.Error(),
-		}
-		return c.JSON(http.StatusInternalServerError, r)
+		return HandleDBError(c, err)
 	}
 
-	r := response.Model{
-		Code:    "200",
-		Message: "Correctly consulted",
-		Data:    users,
-	}
-	return c.JSON(http.StatusOK, r)
+	return HandleSuccess(c, "Successfully retrieved users", users, http.StatusOK)
 }
 
+// userテーブルの削除処理
 func DeleteUser(c echo.Context) error {
-	var user models.User
 	ui := c.QueryParam("user_id")
 	db := configuration.GetDB()
 
+	var user models.User
 	if err := db.Where("user_id = ?", ui).First(&user).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return c.JSON(http.StatusNotFound, response.Model{
-				Code:    "404",
-				Message: "User not found",
-				Data:    err.Error(),
-			})
-		} else {
-			return c.JSON(http.StatusInternalServerError, response.Model{
-				Code:    "500",
-				Message: "Query error",
-				Data:    err.Error(),
-			})
-		}
+		return HandleDBError(c, err)
 	}
 
 	if err := db.Delete(&user).Error; err != nil {
-		r := response.Model{
-			Code:    "500",
-			Message: "Delete error",
-			Data:    err.Error(),
-		}
-		return c.JSON(http.StatusInternalServerError, r)
+		return HandleDBError(c, err)
 	}
 
-	r := response.Model{
-		Code:    "202",
-		Message: "Correctly Deleted",
-		Data:    user,
-	}
-	return c.JSON(http.StatusAccepted, r)
+	return HandleSuccess(c, "User deleted successfully", user, http.StatusAccepted)
 }
 
+// userテーブルの更新処理
 func UpdateUser(c echo.Context) error {
 	ui := c.QueryParam("user_id")
 	db := configuration.GetDB()
 
-	user := models.User{}
+	var user models.User
 	if err := db.Where("user_id = ?", ui).First(&user).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return c.JSON(http.StatusNotFound, response.Model{
-				Code:    "404",
-				Message: "User not found",
-				Data:    err.Error(),
-			})
-		} else {
-			return c.JSON(http.StatusInternalServerError, response.Model{
-				Code:    "500",
-				Message: "Query error",
-				Data:    err.Error(),
-			})
-		}
+		return HandleDBError(c, err)
 	}
 
 	var requestBody map[string]interface{}
 	if err := c.Bind(&requestBody); err != nil {
-		return c.JSON(http.StatusBadRequest, response.Model{
-			Code:    "400",
-			Message: "Invalid request body",
-			Data:    err.Error(),
-		})
+		return HandleInvalidRequestBody(c, err)
 	}
 
-	updates := make(map[string]interface{})
-	for key, value := range requestBody {
-		updates[key] = value
+	// 許可されたフィールドのみ更新
+	allowedUpdates := map[string]bool{
+		"provider_name": true,
+		"provider_id":   true,
+		"eaticle_id":    true,
+		"user_name":     true,
+		"user_img":      true,
 	}
+	updates := FilterAllowedFields(requestBody, allowedUpdates)
 
 	if err := db.Model(&models.User{}).Where("user_id = ?", ui).Updates(updates).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, response.Model{
-			Code:    "500",
-			Message: "Error updating",
-			Data:    err.Error(),
-		})
+		return HandleDBError(c, err)
 	}
 
+	// 更新後のデータを取得して返却
 	if err := db.Where("user_id = ?", ui).First(&user).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, response.Model{
-			Code:    "500",
-			Message: "Query error",
-			Data:    err.Error(),
-		})
+		return HandleDBError(c, err)
 	}
 
-	r := response.Model{
-		Code:    "202",
-		Message: "Updated successfully",
-		Data:    user,
-	}
-	return c.JSON(http.StatusAccepted, r)
+	return HandleSuccess(c, "User updated successfully", user, http.StatusAccepted)
 }
 
+// userテーブルの一件取得処理
 func GetUser(c echo.Context) error {
 	ui := c.QueryParam("user_id")
 	db := configuration.GetDB()
 
 	var user models.User
 	if err := db.Where("user_id = ?", ui).First(&user).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return c.JSON(http.StatusNotFound, response.Model{
-				Code:    "404",
-				Message: "User not found",
-				Data:    err.Error(),
-			})
-		} else {
-			return c.JSON(http.StatusInternalServerError, response.Model{
-				Code:    "500",
-				Message: "Query error",
-				Data:    err.Error(),
-			})
-		}
+		return HandleDBError(c, err)
 	}
 
-	r := response.Model{
-		Code:    "200",
-		Message: "Correctly consulted",
-		Data:    user,
-	}
-	return c.JSON(http.StatusOK, r)
+	return HandleSuccess(c, "Successfully retrieved user", user, http.StatusOK)
 }
