@@ -9,8 +9,8 @@ import (
 
 type User struct {
 	UserID       string `json:"user_id" gorm:"type:varchar(255);primaryKey;not null" validate:"uuid"`
-	ProviderName string `json:"provider_name" gorm:"type:varchar(255);not null" validate:"required"`
-	ProviderID   string `json:"provider_id" gorm:"type:varchar(255);not null" validate:"required"`
+	ProviderName string `json:"provider_name" gorm:"type:varchar(255);not null;uniqueIndex:provider_name_provider_id" validate:"required"`
+	ProviderID   string `json:"provider_id" gorm:"type:varchar(255);not null;uniqueIndex:provider_name_provider_id" validate:"required"`
 	EaticleID    string `json:"eaticle_id" gorm:"type:varchar(255);unique;not null" validate:"required"`
 	UserName     string `json:"user_name" gorm:"type:varchar(255);not null" validate:"required"`
 	UserImg      string `json:"user_img" gorm:"type:varchar(255)" validate:"omitempty,url"`
@@ -19,14 +19,8 @@ type User struct {
 	Articles     []Article `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE;" json:"articles"`
 }
 
-var validate *validator.Validate
-
-func init() {
-	validate = validator.New()
-}
-
 func ValidateUser(user *User) error {
-	err := validate.Struct(user)
+	err := Validate.Struct(user)
 	if err != nil {
 		// バリデーションエラーが発生したフィールドをログに記録
 		for _, err := range err.(validator.ValidationErrors) {
