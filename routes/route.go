@@ -23,8 +23,18 @@ func articleRoutes(e *echo.Echo) {
 	e.DELETE("api/v2/article", functions.DeleteArticle) // 記事削除
 }
 
+// article_tagエンドポイントのルート定義
+func articleTagRoutes(e *echo.Echo) {
+	e.POST("api/v2/article_tag", functions.CreateArticleTag)   // 記事タグ作成
+	e.GET("api/v2/article_tags", functions.GetAllArticleTags)  // 全記事タグ取得
+	e.GET("api/v2/article_tag", functions.GetArticleTag)       // 特定記事タグ取得
+	e.PUT("api/v2/article_tag", functions.UpdateArticleTag)    // 記事タグ更新
+	e.DELETE("api/v2/article_tag", functions.DeleteArticleTag) // 記事タグ削除
+}
+
 // ルートを初期化
 func StartRoutes(e *echo.Echo) {
-	userRoutes(e)    // ユーザー関連ルートを設定
-	articleRoutes(e) // 記事関連ルートを設定
+	userRoutes(e)       // ユーザー関連ルートを設定
+	articleRoutes(e)    // 記事関連ルートを設定
+	articleTagRoutes(e) // 記事タグ関連ルートを設定
 }
