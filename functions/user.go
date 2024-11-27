@@ -38,8 +38,8 @@ func GetAllUsers(c echo.Context) error {
 	return HandleSuccess(c, "Successfully retrieved users", users, http.StatusOK)
 }
 
-// userテーブルの削除処理
-func DeleteUser(c echo.Context) error {
+// userテーブルの一件取得処理
+func GetUser(c echo.Context) error {
 	ui := c.QueryParam("user_id")
 	db := configuration.GetDB()
 
@@ -48,11 +48,7 @@ func DeleteUser(c echo.Context) error {
 		return HandleDBError(c, err)
 	}
 
-	if err := db.Delete(&user).Error; err != nil {
-		return HandleDBError(c, err)
-	}
-
-	return HandleSuccess(c, "User deleted successfully", user, http.StatusAccepted)
+	return HandleSuccess(c, "Successfully retrieved user", user, http.StatusOK)
 }
 
 // userテーブルの更新処理
@@ -92,8 +88,8 @@ func UpdateUser(c echo.Context) error {
 	return HandleSuccess(c, "User updated successfully", user, http.StatusAccepted)
 }
 
-// userテーブルの一件取得処理
-func GetUser(c echo.Context) error {
+// userテーブルの削除処理
+func DeleteUser(c echo.Context) error {
 	ui := c.QueryParam("user_id")
 	db := configuration.GetDB()
 
@@ -102,5 +98,9 @@ func GetUser(c echo.Context) error {
 		return HandleDBError(c, err)
 	}
 
-	return HandleSuccess(c, "Successfully retrieved user", user, http.StatusOK)
+	if err := db.Delete(&user).Error; err != nil {
+		return HandleDBError(c, err)
+	}
+
+	return HandleSuccess(c, "User deleted successfully", user, http.StatusAccepted)
 }
