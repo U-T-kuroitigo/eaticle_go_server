@@ -38,8 +38,8 @@ func GetAllArticles(c echo.Context) error {
 	return HandleSuccess(c, "Successfully retrieved articles", articles, http.StatusOK)
 }
 
-// articleテーブルの削除処理
-func DeleteArticle(c echo.Context) error {
+// articleテーブルの一件取得処理
+func GetArticle(c echo.Context) error {
 	ai := c.QueryParam("article_id")
 	db := configuration.GetDB()
 
@@ -48,11 +48,7 @@ func DeleteArticle(c echo.Context) error {
 		return HandleDBError(c, err)
 	}
 
-	if err := db.Delete(&article).Error; err != nil {
-		return HandleDBError(c, err)
-	}
-
-	return HandleSuccess(c, "Article deleted successfully", article, http.StatusAccepted)
+	return HandleSuccess(c, "Successfully retrieved article", article, http.StatusOK)
 }
 
 // articleテーブルの更新処理
@@ -91,8 +87,8 @@ func UpdateArticle(c echo.Context) error {
 	return HandleSuccess(c, "Article updated successfully", article, http.StatusAccepted)
 }
 
-// articleテーブルの一件取得処理
-func GetArticle(c echo.Context) error {
+// articleテーブルの削除処理
+func DeleteArticle(c echo.Context) error {
 	ai := c.QueryParam("article_id")
 	db := configuration.GetDB()
 
@@ -101,5 +97,9 @@ func GetArticle(c echo.Context) error {
 		return HandleDBError(c, err)
 	}
 
-	return HandleSuccess(c, "Successfully retrieved article", article, http.StatusOK)
+	if err := db.Delete(&article).Error; err != nil {
+		return HandleDBError(c, err)
+	}
+
+	return HandleSuccess(c, "Article deleted successfully", article, http.StatusAccepted)
 }

@@ -71,7 +71,7 @@ func InitDB() {
 	}
 
 	// モデルのマイグレーションを実行
-	if err := db.AutoMigrate(&models.User{}, &models.Article{}); err != nil {
+	if err := db.AutoMigrate(&models.User{}, &models.Article{}, &models.ArticleTag{}); err != nil {
 		// モデルのマイグレーションに失敗しました
 		log.Fatal("Failed to auto-migrate models: ", err)
 	}

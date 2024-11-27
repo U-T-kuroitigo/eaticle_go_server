@@ -9,12 +9,13 @@ import (
 )
 
 type Article struct {
-	ArticleID            string `json:"article_id" gorm:"type:varchar(255);primaryKey;not null" validate:"uuid"`
-	UserID               string `json:"user_id" gorm:"type:varchar(255);not null" validate:"required,uuid"`
-	ArticleThumbnailPath string `json:"article_thumbnail_path" gorm:"type:varchar(255);not null" validate:"required,url"`
-	ArticleTitle         string `json:"article_title" gorm:"type:varchar(255);not null" validate:"required"`
-	ArticleBody          string `json:"article_body" gorm:"type:text;not null" validate:"required"`
-	Public               bool   `json:"public" gorm:"type:boolean;not null;default:false"` // デフォルト値を設定
+	ArticleID            string       `json:"article_id" gorm:"type:varchar(255);primaryKey;not null" validate:"uuid"`
+	UserID               string       `json:"user_id" gorm:"type:varchar(255);not null" validate:"required,uuid"`
+	ArticleThumbnailPath string       `json:"article_thumbnail_path" gorm:"type:varchar(255);not null" validate:"required,url"`
+	ArticleTitle         string       `json:"article_title" gorm:"type:varchar(255);not null" validate:"required"`
+	ArticleBody          string       `json:"article_body" gorm:"type:text;not null" validate:"required"`
+	Public               bool         `json:"public" gorm:"type:boolean;not null;default:false"` // デフォルト値を設定
+	ArticleTags          []ArticleTag `gorm:"foreignKey:ArticleID;constraint:OnDelete:CASCADE;" json:"article_tags"`
 	CreatedAt            time.Time
 	UpdatedAt            time.Time
 	DeletedAt            gorm.DeletedAt `gorm:"index"`
