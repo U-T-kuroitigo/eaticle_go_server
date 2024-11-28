@@ -1,4 +1,4 @@
-package functions
+package common
 
 // FilterAllowedFields: 許可されたフィールドのみをフィルタリングする関数
 // input: クライアントから送られたリクエストボディ
