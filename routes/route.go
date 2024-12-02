@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"github.com/U-T-kuroitigo/eaticle_go_server/functions/api"  // API用関数
 	"github.com/U-T-kuroitigo/eaticle_go_server/functions/crud" // CRUD用関数
 	"github.com/labstack/echo"
 )
@@ -32,9 +33,18 @@ func articleTagCRUDRoutes(e *echo.Echo) {
 	e.DELETE("crud/v2/article_tag", crud.DeleteArticleTag) // 記事タグ削除
 }
 
+func articleAPIRoutes(e *echo.Echo) {
+	e.POST("api/v2/article/save", api.SaveArticle)                   // 記事保存
+	e.GET("api/v2/article/list", api.GetArticles)                    // 記事一覧取得
+	e.GET("api/v2/article/detail/:article_id", api.GetArticleDetail) // 記事詳細取得
+	e.DELETE("api/v2/article/delete/:article_id", api.DeleteArticle) // 記事削除
+}
+
 // ルートの初期化
 func StartRoutes(e *echo.Echo) {
 	userCRUDRoutes(e)       // ユーザー関連CRUDルートを登録
 	articleCRUDRoutes(e)    // 記事関連CRUDルートを登録
 	articleTagCRUDRoutes(e) // 記事タグ関連CRUDルートを登録
+
+	articleAPIRoutes(e) // 記事APIルートを登録
 }
