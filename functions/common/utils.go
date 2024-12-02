@@ -1,4 +1,21 @@
-package functions
+package common
+
+import (
+	"log"
+
+	"github.com/gofrs/uuid"
+)
+
+// GenerateUUIDv7: UUID v7を生成する関数
+func GenerateUUIDv7() string {
+	// UUID v7の生成
+	newUUID, err := uuid.NewV7()
+	if err != nil {
+		// 生成中にエラーが発生した場合、ログに出力
+		log.Fatalf("Failed to generate UUID v7: %v", err)
+	}
+	return newUUID.String()
+}
 
 // FilterAllowedFields: 許可されたフィールドのみをフィルタリングする関数
 // input: クライアントから送られたリクエストボディ

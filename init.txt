@@ -6,6 +6,7 @@ go get -u gorm.io/driver/postgres
 go get github.com/U-T-kuroitigo/eaticle_go_server
 go get github.com/joho/godotenv
 go get "github.com/go-playground/validator/v10"
+go get github.com/gofrs/uuid
 go mod tidy
 
 開発環境用 (go.mod内に追加)
