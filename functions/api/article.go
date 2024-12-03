@@ -26,8 +26,13 @@ func processArticleTags(tx *gorm.DB, articleID string, tagNames []string) error 
 			ArticleID:      articleID,
 			ArticleTagName: tagName,
 		}
-		if err := tx.Create(&articleTag).Error; err != nil {
-			return err
+
+		// モデルのバリデーションを実行
+		if err := models.ValidateArticleTag(&articleTag); err == nil {
+			// バリデーションエラーがなければタグを登録
+			if err := tx.Create(&articleTag).Error; err != nil {
+				return err
+			}
 		}
 	}
 
@@ -71,16 +76,21 @@ func SaveArticle(c echo.Context) error {
 		Public:               requestData.Public,
 	}
 
+	// モデルのバリデーションを実行
+	if err := models.ValidateArticle(&article); err != nil {
+		return common.HandleInvalidRequestBody(c, err)
+	}
+
 	// 記事の存在確認と更新または作成
-	if err := tx.Where("article_id = ?", requestData.ArticleID).First(&models.Article{}).Error; err == nil {
+	if err := tx.Where("article_id = ?", article.ArticleID).First(&models.Article{}).Error; err == nil {
 		// 記事が存在する場合は更新
 		updates := map[string]interface{}{
-			"article_thumbnail_path": requestData.ArticleThumbnailPath,
-			"article_title":          requestData.ArticleTitle,
-			"article_body":           requestData.ArticleBody,
-			"public":                 requestData.Public,
+			"article_thumbnail_path": article.ArticleThumbnailPath,
+			"article_title":          article.ArticleTitle,
+			"article_body":           article.ArticleBody,
+			"public":                 article.Public,
 		}
-		if err := tx.Model(&models.Article{}).Where("article_id = ?", requestData.ArticleID).Updates(updates).Error; err != nil {
+		if err := tx.Model(&models.Article{}).Where("article_id = ?", article.ArticleID).Updates(updates).Error; err != nil {
 			tx.Rollback()
 			return common.HandleDBError(c, err)
 		}
