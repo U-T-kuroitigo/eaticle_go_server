@@ -137,12 +137,12 @@ func GetArticles(c echo.Context) error {
 
 	// ソート条件の解析
 	validSorts := map[string]string{
-		"created_at_desc": "created_at DESC",
-		"created_at_asc":  "created_at ASC",
-		"updated_at_desc": "updated_at DESC",
-		"updated_at_asc":  "updated_at ASC",
+		"created_at_desc": "articles.created_at DESC",
+		"created_at_asc":  "articles.created_at ASC",
+		"updated_at_desc": "articles.updated_at DESC",
+		"updated_at_asc":  "articles.updated_at ASC",
 	}
-	sortOrder := "created_at DESC" // デフォルト: 作成日降順
+	sortOrder := "articles.created_at DESC" // デフォルト: 作成日降順
 	if sortQuery != "" && validSorts[sortQuery] != "" {
 		sortOrder = validSorts[sortQuery]
 	}
@@ -165,7 +165,17 @@ func GetArticles(c echo.Context) error {
 	}()
 
 	// ベースクエリ作成とサーチクエリ適用
-	baseQuery := tx.Model(&models.Article{})
+	baseQuery := tx.Model(&models.Article{}).
+		Select(`
+			articles.article_id,
+			articles.article_thumbnail_path,
+			articles.article_title,
+			articles.created_at,
+			users.eaticle_id,
+			users.user_name,
+			users.user_img
+		`).
+		Joins("JOIN users ON articles.user_id = users.user_id")
 	baseQuery = ArticleSearchQuery(baseQuery, searchQuery)
 
 	// 総件数の取得
@@ -177,8 +187,7 @@ func GetArticles(c echo.Context) error {
 
 	// 記事データの取得
 	var articles []map[string]interface{}
-	baseQuery = baseQuery.Order(sortOrder).Offset(offsetInt).Limit(DefaultLimit)
-	if err := baseQuery.Find(&articles).Error; err != nil {
+	if err := baseQuery.Order(sortOrder).Offset(offsetInt).Limit(DefaultLimit).Find(&articles).Error; err != nil {
 		tx.Rollback()
 		return common.HandleDBError(c, err)
 	}
