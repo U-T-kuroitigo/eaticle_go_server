@@ -185,7 +185,8 @@ func GetArticles(c echo.Context) error {
 			users.user_name,
 			users.user_img
 		`).
-		Joins("JOIN users ON articles.user_id = users.user_id")
+		Joins("JOIN users ON articles.user_id = users.user_id").
+		Where("articles.public = ?", true)
 	baseQuery = ArticleSearchQuery(baseQuery, searchQuery)
 
 	// 総件数の取得
