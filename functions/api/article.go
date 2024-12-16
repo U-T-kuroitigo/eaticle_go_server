@@ -181,6 +181,7 @@ func GetArticles(c echo.Context) error {
 			articles.article_thumbnail_path,
 			articles.article_title,
 			articles.created_at,
+			users.user_id,
 			users.eaticle_id,
 			users.user_name,
 			users.user_img
@@ -260,6 +261,7 @@ func GetArticleDetail(c echo.Context) error {
 			"list":        articleTags,
 			"total_count": len(articleTags),
 		},
+		"user_id":    user.UserID,
 		"eaticle_id": user.EaticleID,
 		"user_name":  user.UserName,
 		"user_img":   user.UserImg,
