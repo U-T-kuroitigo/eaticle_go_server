@@ -36,8 +36,8 @@ func articleTagCRUDRoutes(e *echo.Echo) {
 func articleAPIRoutes(e *echo.Echo) {
 	e.POST("api/v2/article/save", api.SaveArticle)                   // 記事保存
 	e.GET("api/v2/article/list", api.GetArticles)                    // 記事一覧取得
-	e.GET("api/v2/article/detail/:article_id", api.GetArticleDetail) // 記事詳細取得
-	e.DELETE("api/v2/article/delete/:article_id", api.DeleteArticle) // 記事削除
+	e.GET("api/v2/article/:article_id/detail", api.GetArticleDetail) // 記事詳細取得
+	e.DELETE("api/v2/article/:article_id/delete", api.DeleteArticle) // 記事削除
 }
 
 // ルートの初期化

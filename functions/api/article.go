@@ -181,11 +181,13 @@ func GetArticles(c echo.Context) error {
 			articles.article_thumbnail_path,
 			articles.article_title,
 			articles.created_at,
+			users.user_id,
 			users.eaticle_id,
 			users.user_name,
 			users.user_img
 		`).
-		Joins("JOIN users ON articles.user_id = users.user_id")
+		Joins("JOIN users ON articles.user_id = users.user_id").
+		Where("articles.public = ?", true)
 	baseQuery = ArticleSearchQuery(baseQuery, searchQuery)
 
 	// 総件数の取得
@@ -259,6 +261,7 @@ func GetArticleDetail(c echo.Context) error {
 			"list":        articleTags,
 			"total_count": len(articleTags),
 		},
+		"user_id":    user.UserID,
 		"eaticle_id": user.EaticleID,
 		"user_name":  user.UserName,
 		"user_img":   user.UserImg,
