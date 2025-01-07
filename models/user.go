@@ -5,26 +5,22 @@ import (
 	"time"
 
 	"github.com/go-playground/validator/v10"
-	"gorm.io/gorm"
 )
 
 type User struct {
-	UserID      string `json:"user_id" gorm:"type:uuid;primaryKey;not null" validate:"uuid"`
-	MailAddress string `json:"mail_address" gorm:"index:,unique;type:varchar(255);not null" validate:"required,email"`
-	GmailID     string `json:"gmail_id" gorm:"unique;type:varchar(255);not null;size:255" validate:"required"`
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
-	DeletedAt   gorm.DeletedAt `gorm:"index"`
-}
-
-var validate *validator.Validate
-
-func init() {
-	validate = validator.New()
+	UserID       string `json:"user_id" gorm:"type:varchar(255);primaryKey;not null" validate:"uuid"`
+	ProviderName string `json:"provider_name" gorm:"type:varchar(255);not null;uniqueIndex:provider_name_provider_id" validate:"required"`
+	ProviderID   string `json:"provider_id" gorm:"type:varchar(255);not null;uniqueIndex:provider_name_provider_id" validate:"required"`
+	EaticleID    string `json:"eaticle_id" gorm:"type:varchar(255);unique;not null" validate:"required"`
+	UserName     string `json:"user_name" gorm:"type:varchar(255);not null" validate:"required"`
+	UserImg      string `json:"user_img" gorm:"type:varchar(255)" validate:"omitempty,url"`
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
+	Articles     []Article `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE;" json:"articles"`
 }
 
 func ValidateUser(user *User) error {
-	err := validate.Struct(user)
+	err := Validate.Struct(user)
 	if err != nil {
 		// バリデーションエラーが発生したフィールドをログに記録
 		for _, err := range err.(validator.ValidationErrors) {
